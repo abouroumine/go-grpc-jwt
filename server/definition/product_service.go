@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/google/uuid"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -14,8 +13,14 @@ import (
 	"io"
 	"log"
 	"strings"
-	"time"
 )
+
+const (
+	exampleScheme      = "example"
+	exampleServiceName = "local.lo.com"
+)
+
+var addrs = []string{"localhost:50051", "localhost:50052"}
 
 // The Server is used to Implement the generated/product
 type Server struct {
@@ -132,42 +137,4 @@ func (s *Server) UpdateOrder(stream pb.OrderManagement_UpdateOrderServer) error 
 		log.Println("Order ID: ", order.Id, " has been Updated!")
 		orderStr += order.Id + ", "
 	}
-}
-
-func OrderUnaryServerInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-	log.Println("Server Interceptor: ", info.FullMethod)
-
-	m, err := handler(ctx, req)
-
-	log.Println("Post Proc Message: ", m)
-
-	return m, err
-}
-
-type wrappedStream struct {
-	grpc.ServerStream
-}
-
-func (w *wrappedStream) RecvMsg(m interface{}) error {
-	log.Printf("Server Stream Interceptor => Receive a message: Type %T at %s\n", m, time.Now().Format(time.RFC3339))
-	return w.ServerStream.RecvMsg(m)
-}
-
-func (w *wrappedStream) SendMsg(m interface{}) error {
-	log.Printf("Server Stream Interceptor => Send a message: Type %T at %s\n", m, time.Now().Format(time.RFC3339))
-	return w.ServerStream.SendMsg(m)
-}
-
-func newWrappedStream(s grpc.ServerStream) grpc.ServerStream {
-	return &wrappedStream{s}
-}
-
-func OrderServerStreamInterceptor(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-	log.Println("Server Interceptor: ", info.FullMethod)
-
-	err := handler(srv, newWrappedStream(ss))
-	if err != nil {
-		log.Println("RPC Failed with Error: ", err.Error())
-	}
-	return err
 }
