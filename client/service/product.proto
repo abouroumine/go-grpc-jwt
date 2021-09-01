@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package grpc_v2;
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+option go_package = "abouroumine.com/client/grpc-v2;grpc_v2";
+
+service ProductInfo {
+  rpc addProduct(Product) returns (ProductID) {}
+  rpc getProduct(ProductID) returns(Product) {}
+  rpc getProducts(google.protobuf.Empty) returns(Products) {}
+}
+
+message Product {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  float price = 4;
+  string image = 5;
+}
+
+message Products{
+  repeated Product products = 1;
+}
+
+message ProductID {
+  string value = 1;
+}
+
+service OrderManagement {
+  rpc getOrder(google.protobuf.StringValue) returns (Order) {}
+  rpc searchOrders(google.protobuf.StringValue) returns (stream Order) {}
+  rpc updateOrder(stream Order) returns (google.protobuf.StringValue) {}
+}
+
+message Order {
+  string id = 1;
+  repeated string items = 2;
+  string description = 3;
+  float price = 4;
+  string destination = 5;
+}
