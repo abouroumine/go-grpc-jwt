@@ -1,4 +1,3 @@
-# gRPC-v2
-Advanced GRPC Implementation of Unary / Stream gRPC Communications.
-
+# gRPC-v3
+Implementation of the JWT for the gRPC communication in Golang.
 
